@@ -112,6 +112,7 @@ Return only the JSON object in your response.`
         else if (name.includes("antique") || name.includes("vintage")) item.platform = "";
         else item.platform = "-";
         item.source = 'gpt';
+        item.note = 'NRS';
         const ebayValue = await getAverageSoldPrice(item.name);
         if (ebayValue !== null) {
           item.value = ebayValue;

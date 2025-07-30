@@ -33,7 +33,7 @@ export default function Home() {
 
   return (
     <div style={{ padding: 40, fontFamily: 'Arial' }}>
-      <h1>SIBI v3.6.3</h1>
+      <h1>SIBI v3.8.3</h1>
       <input type="file" accept="image/*" onChange={handleFileChange} />
       <button onClick={handleSubmit} disabled={loading}>
         {loading ? "Analysing..." : "Analyse"}
@@ -62,16 +62,40 @@ export default function Home() {
                   <td>{item.name}</td>
                   <td>{item.platform || "-"}</td>
                   <td>
-  {item.value || 0}
-  {item.source === "ebay" ? (
+  ${item.value || 0}
+  {item.note === "NRS" ? (
+    <span style={{
+      backgroundColor: "#999",
+      color: "white",
+      padding: "2px 6px",
+      borderRadius: "4px",
+      fontSize: "0.75rem",
+      marginLeft: "6px"
+    }}>
+      NRS
+    </span>
+  ) : item.source === "ebay" ? (
     <a
       href={`https://www.ebay.com.au/sch/i.html?_nkw=${encodeURIComponent(item.name)}&LH_Sold=1&LH_Complete=1`}
       target="_blank"
       rel="noopener noreferrer"
+      style={{
+        display: "inline-block",
+        backgroundColor: "#0070f3",
+        color: "white",
+        padding: "4px 8px",
+        borderRadius: "4px",
+        textDecoration: "none",
+        fontSize: "0.75rem",
+        marginLeft: "6px",
+        whiteSpace: "nowrap"
+      }}
     >
-      {" ✔️ eBay avg"}
+      eBay avg
     </a>
-  ) : " ⚠️ GPT fallback"}
+  ) : (
+    " ⚠️ GPT fallback"
+  )}
 </td>
                 </tr>
               ))}

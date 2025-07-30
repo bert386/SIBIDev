@@ -1,6 +1,6 @@
 {
   "name": "sibi",
-  "version": "3.5.0",
+  "version": "3.8.3",
   "dependencies": {
     "cheerio": "^1.0.0-rc.12",
     "node-fetch": "^2.6.7",
