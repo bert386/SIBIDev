@@ -26,7 +26,7 @@ export default async function handler(req, res) {
 
     const token = tokenResponse.data.access_token;
 
-    // Search eBay with token
+    // Search eBay
     const ebayResponse = await axios.get(
       `https://api.ebay.com/buy/browse/v1/item_summary/search?q=${encodeURIComponent(query)}&limit=10`,
       {
@@ -37,7 +37,16 @@ export default async function handler(req, res) {
       }
     );
 
-    res.status(200).json({ results: ebayResponse.data.itemSummaries || [] });
+    const items = ebayResponse.data.itemSummaries || [];
+    const parsedResults = items.map(item => ({
+      title: item.title,
+      price: item.price?.value || 'N/A',
+      currency: item.price?.currency || '',
+      condition: item.condition || '',
+      url: item.itemWebUrl
+    }));
+
+    res.status(200).json({ results: parsedResults });
 
   } catch (err) {
     res.status(err.response?.status || 500).json({
