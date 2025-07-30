@@ -1,5 +1,4 @@
-import axios from 'axios';
-import formidable from 'formidable';
+import { IncomingForm } from 'formidable';
 import fs from 'fs';
 import OpenAI from 'openai';
 
@@ -33,7 +32,7 @@ async function getEbayValuation(title) {
 }
 
 export default async function handler(req, res) {
-  const form = new formidable.IncomingForm();
+  const form = new IncomingForm();
 
   form.parse(req, async (err, fields, files) => {
     const imageFile = files?.images;
