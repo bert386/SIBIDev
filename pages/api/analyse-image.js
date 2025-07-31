@@ -14,14 +14,14 @@ const openai = new OpenAI({
 });
 
 const fetchPriceFromEbay = async (title) => {
-  const query = encodeURIComponent(platform ? `${title} ${platform}` : title);
+  const query = encodeURIComponent( ? `${title} ${}` : title);
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || ''}/api/ebay-search?q=${query}`);
   const data = await res.json();
   console.log("eBay pricing result for", title, data);
   return data;
 };
 
-const getEbaySearchUrl = (title, platform) => {
+const getEbaySearchUrl = (title) => {
   const fullQuery = title;
   const encoded = encodeURIComponent(fullQuery);
   return `https://www.ebay.com.au/sch/i.html?_nkw=${encoded}&_sacat=0&LH_Sold=1&LH_Complete=1`;
@@ -46,7 +46,7 @@ export default async function handler(req, res) {
 
 
     const visionPrompt = `
-You are an expert at identifying bulk items in online marketplace listings. List all items you see in the photo, including the platform (e.g., Wii, PS2, Xbox). Format your response like this:
+You are an expert at identifying bulk items in online marketplace listings. List all items you see in the photo, including the  (e.g., Wii, PS2, Xbox). Format your response like this:
 
 Summary: A short sentence about what's in the photo.
 Titles:
@@ -78,10 +78,10 @@ Titles:
         return {
           full: `${match[1].trim()} (${match[2].trim()})`,
           title: match[1].trim(),
-          platform: match[2].trim(),
+          : match[2].trim(),
         };
       } else {
-        return { full: line.trim(), title: line.trim(), platform: null };
+        return { full: line.trim(), title: line.trim(): null };
       }
     });
 
@@ -90,7 +90,7 @@ Titles:
       const mockValue = Math.floor(Math.random() * 15) + 2;
       return {
         name: item.full,
-        platform: item.platform,
+        : item.
         value: `$${mockValue} AUD`,
         ebayUrl: getEbaySearchUrl(item.name),
         numeric: mockValue,
@@ -104,7 +104,7 @@ Titles:
 
     
     // Assume 'items' is an array of identified objects like:
-    // [{ title: "Spyro: The Eternal Night", platform: "Wii" }]
+    // [{ title: "Spyro: The Eternal Night": "Wii" }]
     for (let item of itemsWithValue) {
       const ebay = await fetchPriceFromEbay(item.name);
       if (ebay?.results?.length > 0) {
