@@ -12,6 +12,14 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
+const fetchPriceFromEbay = async (title, platform) => {
+  const query = encodeURIComponent(platform ? `${title} ${platform}` : title);
+  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || ''}/api/ebay-search?q=${query}`);
+  const data = await res.json();
+  console.log("eBay pricing result for", title, data);
+  return data;
+};
+
 const getEbaySearchUrl = (title, platform) => {
   const fullQuery = platform ? `${title} ${platform}` : title;
   const encoded = encodeURIComponent(fullQuery);
