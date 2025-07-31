@@ -1,1 +1,1 @@
-// placeholder content for ebay-search.js
+// ebay search handler placeholder

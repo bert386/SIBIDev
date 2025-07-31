@@ -1,1 +1,1 @@
-// placeholder content for index.js
+export default function Home() { return <div>SIBI v3.6.7m</div>; }

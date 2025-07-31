@@ -1,1 +1,1 @@
-// placeholder content for analyse-image.js
+// analyse image handler placeholder

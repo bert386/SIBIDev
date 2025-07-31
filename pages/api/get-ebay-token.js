@@ -1,1 +1,1 @@
-// placeholder content for get-ebay-token.js
+// ebay token handler placeholder
