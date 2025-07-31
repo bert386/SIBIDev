@@ -78,10 +78,9 @@ Titles:
         return {
           full: `${match[1].trim()} (${match[2].trim()})`,
           title: match[1].trim(),
-          : match[2].trim(),
-        };
+                  };
       } else {
-        return { full: line.trim(), title: line.trim(): null };
+        return { full: line.trim(), title: line.trim() };
       }
     });
 
