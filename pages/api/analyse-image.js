@@ -42,7 +42,7 @@ export default async function handler(req, res) {
     const imageBuffer = fs.readFileSync(image.filepath);
 
 // TEMP: Test call to fetchPriceFromEbay directly
-await fetchPriceFromEbay("Spyro: The Eternal Night", "Wii");
+
 
 
     const visionPrompt = `
@@ -102,6 +102,24 @@ Titles:
       .slice(0, 3)
       .map(i => `${i.name} – ${i.value}`);
 
+    
+    // Assume 'items' is an array of identified objects like:
+    // [{ title: "Spyro: The Eternal Night", platform: "Wii" }]
+    for (let item of items) {
+      const ebay = await fetchPriceFromEbay(item.title, item.platform);
+      if (ebay?.results?.length > 0) {
+        const avg = ebay.results
+          .map(r => parseFloat(r.price))
+          .filter(n => !isNaN(n));
+        const avgPrice = avg.length ? (avg.reduce((a, b) => a + b, 0) / avg.length).toFixed(2) : 'NRS';
+        item.price = avgPrice;
+        item.ebayUrl = ebay.results[0].url;
+      } else {
+        item.price = 'NRS';
+        item.ebayUrl = null;
+      }
+    }
+    
     res.status(200).json({
       summary: summary,
       items: itemsWithValue,
