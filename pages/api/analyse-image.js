@@ -35,7 +35,7 @@ export default async function handler(req, res) {
   const form = new IncomingForm();
 
   form.parse(req, async (err, fields, files) => {
-    const imageFile = files?.images || Object.values(files)[0];
+    const imageFile = files?.image?.[0] || files?.images?.[0] || Object.values(files)[0];
 
     if (!imageFile?.filepath) {
       console.error('File parsing failed. Formidable files:', files);
