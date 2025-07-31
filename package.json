@@ -1,1 +1,15 @@
-{ "name": "sibi", "version": "3.6.7m", "scripts": { "vercel-build": "next build" } }
+{
+  "name": "sibi",
+  "version": "3.6.7m",
+  "scripts": {
+    "vercel-build": "next build"
+  },
+  "dependencies": {
+    "next": "14.1.3",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "axios": "^1.6.8",
+    "formidable": "^3.5.0",
+    "openai": "^4.29.0"
+  }
+}
