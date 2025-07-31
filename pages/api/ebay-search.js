@@ -2,6 +2,7 @@ import axios from 'axios';
 
 export default async function handler(req, res) {
   const query = req.query.q;
+  console.log('🔍 eBay query received:', query);
   if (!query) return res.status(400).json({ error: 'Missing query parameter ?q=' });
 
   const clientId = process.env.EBAY_CLIENT_ID;
