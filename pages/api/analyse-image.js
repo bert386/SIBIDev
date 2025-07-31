@@ -105,7 +105,7 @@ Titles:
     
     // Assume 'items' is an array of identified objects like:
     // [{ title: "Spyro: The Eternal Night", platform: "Wii" }]
-    for (let item of items) {
+    for (let item of itemsWithValue) {
       const ebay = await fetchPriceFromEbay(item.title, item.platform);
       if (ebay?.results?.length > 0) {
         const avg = ebay.results
