@@ -40,6 +40,10 @@ export default async function handler(req, res) {
 
     const imageBuffer = fs.readFileSync(image.filepath);
 
+// TEMP: Test call to fetchPriceFromEbay directly
+await fetchPriceFromEbay("Spyro: The Eternal Night", "Wii");
+
+
     const visionPrompt = `
 You are an expert at identifying bulk items in online marketplace listings. List all items you see in the photo, including the platform (e.g., Wii, PS2, Xbox). Format your response like this:
 
