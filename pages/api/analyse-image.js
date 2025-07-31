@@ -13,13 +13,19 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-const fetchPriceFromEbay = async (title) => {
-  const query = encodeURIComponent(title);
+
+const fetchPriceFromEbay = async (title, category = "") => {
+  let queryTitle = title;
+  if (category && category.toLowerCase() === "game") {
+    queryTitle = title + " Game";
+  }
+  const query = encodeURIComponent(queryTitle);
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || ''}/api/ebay-search?q=${query}`);
   const data = await res.json();
-  console.log("eBay pricing result for", title, data);
+  console.log("eBay pricing result for", queryTitle, data);
   return data;
 };
+
 
 const getEbaySearchUrl = (title) => {
   const fullQuery = title;
@@ -104,6 +110,20 @@ Titles:
     // Assume 'items' is an array of identified objects like:
     // [{ title: "Spyro: The Eternal Night": "Wii" }]
     for (let item of itemsWithValue) {
+    const category = item.category || "";
+    const ebay = await fetchPriceFromEbay(item.name, category);
+    if (ebay?.results?.length > 0) {
+      const avg = ebay.results
+        .map(r => parseFloat(r.price))
+        .filter(n => !isNaN(n));
+      const avgPrice = avg.length ? (avg.reduce((a, b) => a + b, 0) / avg.length).toFixed(2) : 'NRS';
+      item.price = avgPrice;
+      item.ebayUrl = `https://www.ebay.com.au/sch/i.html?_nkw=${encodeURIComponent(item.name)}&LH_Sold=1&LH_Complete=1`;
+    } else {
+      item.price = 'NRS';
+      item.ebayUrl = null;
+    }
+
       const ebay = await fetchPriceFromEbay(item.name);
       if (ebay?.results?.length > 0) {
         const avg = ebay.results
