@@ -88,9 +88,8 @@ Titles:
       // Mock value lookup — replace with real logic
       const mockValue = Math.floor(Math.random() * 15) + 2;
       return {
-        name: item.full,
-        : item.
-        value: `$${mockValue} AUD`,
+        namefull,
+                value: `$${mockValue} AUD`,
         ebayUrl: getEbaySearchUrl(item.name),
         numeric: mockValue,
       };
