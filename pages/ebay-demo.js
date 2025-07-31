@@ -60,7 +60,7 @@ export default function EbayDemo() {
         <title>eBay Valuation Demo</title>
       </Head>
       <h1>eBay Valuation Demo</h1>
-      <p style={{ fontSize: '0.85rem', color: '#555' }}>Version: v3.6.7c</p>
+      <p style={{ fontSize: '0.85rem', color: '#555' }}>Version: v3.6.7d</p>
       <table border="1" cellPadding="8">
         <thead>
           <tr>
