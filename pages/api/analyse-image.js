@@ -1,8 +1,6 @@
-import { IncomingForm } from 'formidable';
+import formidable from 'formidable';
 import fs from 'fs';
-import OpenAI from 'openai';
-
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+import { OpenAI } from 'openai';
 
 export const config = {
   api: {
@@ -10,76 +8,91 @@ export const config = {
   },
 };
 
-async function getEbayValuation(title) {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || ''}/api/ebay-search?q=${encodeURIComponent(title)}`);
-  const data = await res.json();
-  const items = data.results || [];
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
 
-  if (!items.length) return { value: 'NRS', url: '' };
-
-  const prices = items
-    .filter(i => i.price !== 'N/A')
-    .map(i => parseFloat(i.price))
-    .sort((a, b) => a - b)
-    .slice(0, 3);
-
-  const avg = prices.reduce((a, b) => a + b, 0) / prices.length;
-
-  return {
-    value: `$${avg.toFixed(0)} AUD`,
-    url: items[0].url,
-  };
-}
+const getEbaySearchUrl = (title, platform) => {
+  const fullQuery = platform ? `${title} ${platform}` : title;
+  const encoded = encodeURIComponent(fullQuery);
+  return `https://www.ebay.com.au/sch/i.html?_nkw=${encoded}&_sacat=0&LH_Sold=1&LH_Complete=1`;
+};
 
 export default async function handler(req, res) {
-  const form = new IncomingForm();
-
+  const form = formidable({ keepExtensions: true });
   form.parse(req, async (err, fields, files) => {
-    const imageFile = files?.image?.[0] || files?.images?.[0] || Object.values(files)[0];
-
-    if (!imageFile?.filepath) {
-      console.error('File parsing failed. Formidable files:', files);
-      return res.status(400).json({ error: 'No uploaded file detected' });
+    if (err) {
+      return res.status(500).json({ error: 'File parsing failed' });
     }
 
-    const buffer = fs.readFileSync(imageFile.filepath);
-    const base64Image = buffer.toString('base64');
+    const image = files.image?.[0];
+    if (!image) {
+      return res.status(400).json({ error: 'No image uploaded' });
+    }
+
+    const imageBuffer = fs.readFileSync(image.filepath);
+
+    const visionPrompt = `
+You are an expert at identifying bulk items in online marketplace listings. List all items you see in the photo, including the platform (e.g., Wii, PS2, Xbox). Format your response like this:
+
+Summary: A short sentence about what's in the photo.
+Titles:
+1. [Full Item Title] ([Platform])
+2. ...
+    `.trim();
 
     const gptRes = await openai.chat.completions.create({
       model: 'gpt-4o',
       messages: [
+        { role: 'system', content: 'You are a helpful assistant that understands images of video games and related media.' },
         {
           role: 'user',
           content: [
-            { type: 'text', text: 'List the items in this photo. Include brand and platform if known.' },
-            {
-              type: 'image_url',
-              image_url: {
-                url: `data:${imageFile.mimetype};base64,${base64Image}`,
-              },
-            },
+            { type: 'text', text: visionPrompt },
+            { type: 'image_url', image_url: { url: `data:${image.mimetype};base64,${imageBuffer.toString('base64')}` } },
           ],
         },
       ],
-      max_tokens: 500,
     });
 
-    const text = gptRes.choices[0]?.message?.content || '';
-    const lines = text.split('\n').filter(l => l.trim());
-    const itemLines = lines.map(l => l.replace(/^\d+[).]?\s*/, '').trim());
+    const raw = gptRes.choices[0].message.content;
+    const summary = raw.split("Titles:")[0].replace("Summary:", "").trim();
+    const lines = raw.split("Titles:")[1].trim().split("\n").filter(Boolean);
 
-    const results = [];
+    const parsedItems = lines.map(line => {
+      const match = line.match(/\d+\.\s*(.+?)\s*\(([^)]+)\)/);
+      if (match) {
+        return {
+          full: `${match[1].trim()} (${match[2].trim()})`,
+          title: match[1].trim(),
+          platform: match[2].trim(),
+        };
+      } else {
+        return { full: line.trim(), title: line.trim(), platform: null };
+      }
+    });
 
-    for (const itemName of itemLines) {
-      const ebay = await getEbayValuation(itemName);
-      results.push({
-        name: itemName,
-        platform: '-',
-        value: ebay.value,
-        ebayLink: ebay.url,
-      });
-    }
+    const itemsWithValue = parsedItems.map((item) => {
+      // Mock value lookup — replace with real logic
+      const mockValue = Math.floor(Math.random() * 15) + 2;
+      return {
+        name: item.full,
+        platform: item.platform,
+        value: `$${mockValue} AUD`,
+        ebayUrl: getEbaySearchUrl(item.title, item.platform),
+        numeric: mockValue,
+      };
+    });
 
-    res.status(200).json({ items: results });
+    const topItems = [...itemsWithValue]
+      .sort((a, b) => b.numeric - a.numeric)
+      .slice(0, 3)
+      .map(i => `${i.name} – ${i.value}`);
+
+    res.status(200).json({
+      summary: summary,
+      items: itemsWithValue,
+      topItems,
+    });
   });
 }
