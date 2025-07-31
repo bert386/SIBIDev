@@ -35,7 +35,12 @@ export default async function handler(req, res) {
   const form = new IncomingForm();
 
   form.parse(req, async (err, fields, files) => {
-    const imageFile = files?.images;
+    const imageFile = files?.images || Object.values(files)[0];
+
+    if (!imageFile?.filepath) {
+      console.error('File parsing failed. Formidable files:', files);
+      return res.status(400).json({ error: 'No uploaded file detected' });
+    }
 
     const buffer = fs.readFileSync(imageFile.filepath);
     const base64Image = buffer.toString('base64');
@@ -69,7 +74,7 @@ export default async function handler(req, res) {
       const ebay = await getEbayValuation(itemName);
       results.push({
         name: itemName,
-        platform: '-', // GPT guess optional
+        platform: '-',
         value: ebay.value,
         ebayLink: ebay.url,
       });
