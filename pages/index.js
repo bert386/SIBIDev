@@ -1,17 +1,37 @@
-
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 export default function Home() {
   const [file, setFile] = useState(null);
-  const version = "v3.6.7l";
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!file) {
+      alert("Please select a file first.");
+      return;
+    }
+    const formData = new FormData();
+    formData.append("image", file);
+    try {
+      const res = await fetch("/api/analyse-image", {
+        method: "POST",
+        body: formData
+      });
+      const data = await res.json();
+      console.log("Analysis Result:", data);
+    } catch (err) {
+      console.error("Upload failed:", err);
+      alert("Failed to analyse image.");
+    }
+  };
 
   return (
     <div>
       <h1>Welcome to SIBI</h1>
-      <p><strong>Version:</strong> v3.6.7l</p>
-      <p>Upload an image of your bulk lot to get live item valuation from eBay.</p>
-      <input type="file" onChange={(e) => setFile(e.target.files[0])} />
-      <button disabled={!file}>Analyse</button>
+      <p><strong>Version:</strong> v3.6.7m</p>
+      <form onSubmit={handleSubmit}>
+        <input type="file" onChange={(e) => setFile(e.target.files[0])} />
+        <button type="submit">Analyse</button>
+      </form>
     </div>
   );
 }
