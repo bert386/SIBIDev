@@ -111,9 +111,9 @@ Titles:
     // [{ title: "Spyro: The Eternal Night": "Wii" }]
     for (let item of itemsWithValue) {
     const category = item.category || "";
-    const ebay = await fetchPriceFromEbay(item.name, category);
-    if (ebay?.results?.length > 0) {
-      const avg = ebay.results
+    const ebayData = await fetchPriceFromEbay(item.name, category);
+    if (ebayData?.results?.length > 0) {
+      const avg = ebayData.results
         .map(r => parseFloat(r.price))
         .filter(n => !isNaN(n));
       const avgPrice = avg.length ? (avg.reduce((a, b) => a + b, 0) / avg.length).toFixed(2) : 'NRS';
@@ -125,8 +125,8 @@ Titles:
     }
 
       const ebay = await fetchPriceFromEbay(item.name);
-      if (ebay?.results?.length > 0) {
-        const avg = ebay.results
+      if (ebayData?.results?.length > 0) {
+        const avg = ebayData.results
           .map(r => parseFloat(r.price))
           .filter(n => !isNaN(n));
         const avgPrice = avg.length ? (avg.reduce((a, b) => a + b, 0) / avg.length).toFixed(2) : 'NRS';
