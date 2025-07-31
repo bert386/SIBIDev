@@ -1,1 +1,98 @@
-// backend logic placeholder for image analysis
+import formidable from 'formidable';
+import fs from 'fs';
+import { OpenAI } from 'openai';
+
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+};
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
+const getEbaySearchUrl = (title, platform) => {
+  const fullQuery = platform ? `${title} ${platform}` : title;
+  const encoded = encodeURIComponent(fullQuery);
+  return `https://www.ebay.com.au/sch/i.html?_nkw=${encoded}&_sacat=0&LH_Sold=1&LH_Complete=1`;
+};
+
+export default async function handler(req, res) {
+  const form = formidable({ keepExtensions: true });
+  form.parse(req, async (err, fields, files) => {
+    if (err) {
+      return res.status(500).json({ error: 'File parsing failed' });
+    }
+
+    const image = files.image?.[0];
+    if (!image) {
+      return res.status(400).json({ error: 'No image uploaded' });
+    }
+
+    const imageBuffer = fs.readFileSync(image.filepath);
+
+    const visionPrompt = `
+You are an expert at identifying bulk items in online marketplace listings. List all items you see in the photo, including the platform (e.g., Wii, PS2, Xbox). Format your response like this:
+
+Summary: A short sentence about what's in the photo.
+Titles:
+1. [Full Item Title] ([Platform])
+2. ...
+    `.trim();
+
+    const gptRes = await openai.chat.completions.create({
+      model: 'gpt-4o',
+      messages: [
+        { role: 'system', content: 'You are a helpful assistant that understands images of video games and related media.' },
+        {
+          role: 'user',
+          content: [
+            { type: 'text', text: visionPrompt },
+            { type: 'image_url', image_url: { url: `data:${image.mimetype};base64,${imageBuffer.toString('base64')}` } },
+          ],
+        },
+      ],
+    });
+
+    const raw = gptRes.choices[0].message.content;
+    const summary = raw.split("Titles:")[0].replace("Summary:", "").trim();
+    const lines = raw.split("Titles:")[1].trim().split("\n").filter(Boolean);
+
+    const parsedItems = lines.map(line => {
+      const match = line.match(/\d+\.\s*(.+?)\s*\(([^)]+)\)/);
+      if (match) {
+        return {
+          full: `${match[1].trim()} (${match[2].trim()})`,
+          title: match[1].trim(),
+          platform: match[2].trim(),
+        };
+      } else {
+        return { full: line.trim(), title: line.trim(), platform: null };
+      }
+    });
+
+    const itemsWithValue = parsedItems.map((item) => {
+      // Mock value lookup — replace with real logic
+      const mockValue = Math.floor(Math.random() * 15) + 2;
+      return {
+        name: item.full,
+        platform: item.platform,
+        value: `$${mockValue} AUD`,
+        ebayUrl: getEbaySearchUrl(item.title, item.platform),
+        numeric: mockValue,
+      };
+    });
+
+    const topItems = [...itemsWithValue]
+      .sort((a, b) => b.numeric - a.numeric)
+      .slice(0, 3)
+      .map(i => `${i.name} – ${i.value}`);
+
+    res.status(200).json({
+      summary: summary,
+      items: itemsWithValue,
+      topItems,
+    });
+  });
+}
