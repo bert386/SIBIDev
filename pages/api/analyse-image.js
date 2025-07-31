@@ -13,7 +13,7 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-const fetchPriceFromEbay = async (title, platform) => {
+const fetchPriceFromEbay = async (title) => {
   const query = encodeURIComponent(platform ? `${title} ${platform}` : title);
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || ''}/api/ebay-search?q=${query}`);
   const data = await res.json();
@@ -22,7 +22,7 @@ const fetchPriceFromEbay = async (title, platform) => {
 };
 
 const getEbaySearchUrl = (title, platform) => {
-  const fullQuery = platform ? `${title} ${platform}` : title;
+  const fullQuery = title;
   const encoded = encodeURIComponent(fullQuery);
   return `https://www.ebay.com.au/sch/i.html?_nkw=${encoded}&_sacat=0&LH_Sold=1&LH_Complete=1`;
 };
@@ -92,7 +92,7 @@ Titles:
         name: item.full,
         platform: item.platform,
         value: `$${mockValue} AUD`,
-        ebayUrl: getEbaySearchUrl(item.name, item.platform),
+        ebayUrl: getEbaySearchUrl(item.name),
         numeric: mockValue,
       };
     });
@@ -106,7 +106,7 @@ Titles:
     // Assume 'items' is an array of identified objects like:
     // [{ title: "Spyro: The Eternal Night", platform: "Wii" }]
     for (let item of itemsWithValue) {
-      const ebay = await fetchPriceFromEbay(item.name, item.platform);
+      const ebay = await fetchPriceFromEbay(item.name);
       if (ebay?.results?.length > 0) {
         const avg = ebay.results
           .map(r => parseFloat(r.price))
