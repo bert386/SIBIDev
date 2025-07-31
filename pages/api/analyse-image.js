@@ -92,7 +92,7 @@ Titles:
         name: item.full,
         platform: item.platform,
         value: `$${mockValue} AUD`,
-        ebayUrl: getEbaySearchUrl(item.title, item.platform),
+        ebayUrl: getEbaySearchUrl(item.name, item.platform),
         numeric: mockValue,
       };
     });
@@ -106,7 +106,7 @@ Titles:
     // Assume 'items' is an array of identified objects like:
     // [{ title: "Spyro: The Eternal Night", platform: "Wii" }]
     for (let item of itemsWithValue) {
-      const ebay = await fetchPriceFromEbay(item.title, item.platform);
+      const ebay = await fetchPriceFromEbay(item.name, item.platform);
       if (ebay?.results?.length > 0) {
         const avg = ebay.results
           .map(r => parseFloat(r.price))
