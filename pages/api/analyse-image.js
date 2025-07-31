@@ -88,7 +88,7 @@ Titles:
       // Mock value lookup — replace with real logic
       const mockValue = Math.floor(Math.random() * 15) + 2;
       return {
-        name: item.full,
+        item.full,
                 value: `$${mockValue} AUD`,
         ebayUrl: getEbaySearchUrl(item.name),
         numeric: mockValue,
@@ -111,7 +111,7 @@ Titles:
           .filter(n => !isNaN(n));
         const avgPrice = avg.length ? (avg.reduce((a, b) => a + b, 0) / avg.length).toFixed(2) : 'NRS';
         item.price = avgPrice;
-        item.ebayUrl = ebay.results[0].url;
+        item.ebayUrl = `https://www.ebay.com.au/sch/i.html?_nkw=${encodeURIComponent(item.name)}&LH_Sold=1&LH_Complete=1`;
       } else {
         item.price = 'NRS';
         item.ebayUrl = null;
